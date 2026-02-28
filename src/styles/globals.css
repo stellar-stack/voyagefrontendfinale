@@ -157,4 +157,12 @@
   .sidebar-link.active {
     @apply bg-accent-muted text-accent;
   }
+
+  .label {
+    @apply mb-1.5 block text-sm font-medium text-text-secondary;
+  }
+
+  .error {
+    @apply mt-1 text-xs text-danger;
+  }
 }

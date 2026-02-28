@@ -3,7 +3,8 @@ import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios'
 export const api = axios.create({
   baseURL: '/api/v1',
   withCredentials: true,
-  headers: { 'Content-Type': 'application/json' },
+  // No global Content-Type: Axios auto-sets application/json for objects
+  // and multipart/form-data (with boundary) for FormData
 })
 
 let isRefreshing = false
@@ -54,9 +55,7 @@ api.interceptors.response.use(
         return api(originalRequest)
       } catch (refreshError) {
         processQueue(refreshError as AxiosError)
-        // Import lazily to avoid circular dependency
-        const { useAuthStore } = await import('@/store/auth.store')
-        useAuthStore.getState().clearUser()
+        // Navigate to login — page reload resets all Zustand state
         window.location.href = '/login'
         return Promise.reject(refreshError)
       } finally {

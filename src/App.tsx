@@ -18,6 +18,7 @@ import RegisterPage from '@/pages/auth/RegisterPage'
 import VerifyEmailPage from '@/pages/auth/VerifyEmailPage'
 import OAuthCallbackPage from '@/pages/auth/OAuthCallbackPage'
 import FeedPage from '@/pages/feed/FeedPage'
+import PostDetailPage from '@/pages/post/PostDetailPage'
 import ProfilePage from '@/pages/profile/ProfilePage'
 import EditProfilePage from '@/pages/profile/EditProfilePage'
 import FollowersPage from '@/pages/profile/FollowersPage'
@@ -78,6 +79,7 @@ function AppInner() {
       <Route element={<AuthGuard />}>
         <Route element={<AppShell />}>
           <Route path="/feed" element={<FeedPage />} />
+          <Route path="/post/:postId" element={<PostDetailPage />} />
           <Route path="/profile/edit" element={<EditProfilePage />} />
           <Route path="/profile/:username" element={<ProfilePage />} />
           <Route path="/profile/:username/followers" element={<FollowersPage />} />
@@ -114,7 +116,7 @@ function AppInner() {
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <AnimatePresence mode="wait">
         <AppInner />
       </AnimatePresence>

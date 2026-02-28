@@ -9,7 +9,7 @@ export const messagesApi = {
 
   sendMessage: async (recipientUsername: string, content: string) => {
     const res = await api.post<Message>('/messages/send/', {
-      recipient_username: recipientUsername,
+      username: recipientUsername,
       content,
     })
     return res.data

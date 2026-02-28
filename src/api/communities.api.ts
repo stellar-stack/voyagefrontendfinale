@@ -18,13 +18,13 @@ export const communitiesApi = {
   },
 
   create: async (payload: CreateCommunityPayload) => {
-    const form = buildFormData(payload as Record<string, unknown>)
+    const form = buildFormData(payload as unknown as Record<string, unknown>)
     const res = await api.post<Community>('/communities/create/', form)
     return res.data
   },
 
   update: async (id: number, payload: UpdateCommunityPayload) => {
-    const form = buildFormData(payload as Record<string, unknown>)
+    const form = buildFormData(payload as unknown as Record<string, unknown>)
     const res = await api.patch<Community>(`/communities/${id}/update/`, form)
     return res.data
   },

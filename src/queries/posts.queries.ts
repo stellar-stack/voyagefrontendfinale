@@ -9,6 +9,14 @@ import { postsApi } from '@/api'
 import { QUERY_KEYS } from './queryClient'
 import type { Post, CreatePostPayload, ReactionType, PaginatedResponse } from '@/types'
 
+export function usePostQuery(postId: number) {
+  return useQuery({
+    queryKey: QUERY_KEYS.POST(postId),
+    queryFn: () => postsApi.getPost(postId),
+    enabled: !!postId,
+  })
+}
+
 export function useFeedQuery() {
   return useInfiniteQuery({
     queryKey: QUERY_KEYS.FEED,
@@ -55,6 +63,18 @@ export function useCreatePost() {
     mutationFn: (payload: CreatePostPayload) => postsApi.createPost(payload),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: QUERY_KEYS.FEED })
+    },
+  })
+}
+
+export function useEditPost() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ postId, payload }: { postId: number; payload: { caption?: string; content?: string } }) =>
+      postsApi.editPost(postId, payload),
+    onSuccess: (_data: Post, { postId }: { postId: number; payload: { caption?: string; content?: string } }) => {
+      qc.invalidateQueries({ queryKey: QUERY_KEYS.FEED })
+      qc.invalidateQueries({ queryKey: QUERY_KEYS.POST(postId) })
     },
   })
 }

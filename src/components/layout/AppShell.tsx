@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router-dom'
 import Sidebar from './Sidebar'
 import MobileNavBar from './MobileNavBar'
+import { EditPostModal } from '@/components/post/EditPostModal'
 
 export default function AppShell() {
   return (
@@ -17,6 +18,9 @@ export default function AppShell() {
 
       {/* Mobile bottom nav */}
       <MobileNavBar />
+
+      {/* Global modals */}
+      <EditPostModal />
     </div>
   )
 }

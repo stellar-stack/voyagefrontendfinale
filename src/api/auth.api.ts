@@ -8,7 +8,7 @@ export const authApi = {
   },
 
   register: async (payload: RegisterPayload) => {
-    const form = buildFormData(payload as Record<string, unknown>)
+    const form = buildFormData(payload as unknown as Record<string, unknown>)
     const res = await api.post<{ success: boolean; message: string }>('/auth/register/', form)
     return res.data
   },
@@ -34,7 +34,7 @@ export const authApi = {
   },
 
   updateMe: async (payload: UpdateProfilePayload) => {
-    const form = buildFormData(payload as Record<string, unknown>)
+    const form = buildFormData(payload as unknown as Record<string, unknown>)
     const res = await api.patch<UserPrivate>('/auth/users/me/update/', form)
     return res.data
   },

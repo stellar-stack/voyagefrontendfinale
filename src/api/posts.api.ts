@@ -2,6 +2,11 @@ import { api, buildFormData } from './axios'
 import type { Post, Comment, Bookmark, CreatePostPayload, CreateCommentPayload, ReactionType, PaginatedResponse } from '@/types'
 
 export const postsApi = {
+  getPost: async (postId: number) => {
+    const res = await api.get<Post>(`/posts/${postId}/`)
+    return res.data
+  },
+
   getFeed: async (page = 1) => {
     const res = await api.get<PaginatedResponse<Post>>(`/posts/feed/?page=${page}`)
     return res.data
@@ -15,7 +20,7 @@ export const postsApi = {
   },
 
   createPost: async (payload: CreatePostPayload) => {
-    const form = buildFormData(payload as Record<string, unknown>)
+    const form = buildFormData(payload as unknown as Record<string, unknown>)
     const res = await api.post<Post>('/posts/create/', form)
     return res.data
   },
