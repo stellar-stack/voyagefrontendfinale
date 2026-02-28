@@ -1,0 +1,162 @@
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type InfiniteData,
+} from '@tanstack/react-query'
+import { postsApi } from '@/api'
+import { QUERY_KEYS } from './queryClient'
+import type { Post, CreatePostPayload, ReactionType, PaginatedResponse } from '@/types'
+
+export function useFeedQuery() {
+  return useInfiniteQuery({
+    queryKey: QUERY_KEYS.FEED,
+    queryFn: ({ pageParam = 1 }) => postsApi.getFeed(pageParam as number),
+    getNextPageParam: (last) =>
+      last.next ? Number(new URL(last.next).searchParams.get('page')) : undefined,
+    initialPageParam: 1,
+  })
+}
+
+export function useCommunityFeedQuery(communityId: number) {
+  return useInfiniteQuery({
+    queryKey: QUERY_KEYS.COMMUNITY_FEED(communityId),
+    queryFn: ({ pageParam = 1 }) => postsApi.getCommunityFeed(communityId, pageParam as number),
+    getNextPageParam: (last) =>
+      last.next ? Number(new URL(last.next).searchParams.get('page')) : undefined,
+    initialPageParam: 1,
+  })
+}
+
+export function useCommentsQuery(postId: number) {
+  return useInfiniteQuery({
+    queryKey: QUERY_KEYS.COMMENTS(postId),
+    queryFn: ({ pageParam = 1 }) => postsApi.getComments(postId, pageParam as number),
+    getNextPageParam: (last) =>
+      last.next ? Number(new URL(last.next).searchParams.get('page')) : undefined,
+    initialPageParam: 1,
+  })
+}
+
+export function useBookmarksQuery() {
+  return useInfiniteQuery({
+    queryKey: QUERY_KEYS.BOOKMARKS,
+    queryFn: ({ pageParam = 1 }) => postsApi.getBookmarks(pageParam as number),
+    getNextPageParam: (last) =>
+      last.next ? Number(new URL(last.next).searchParams.get('page')) : undefined,
+    initialPageParam: 1,
+  })
+}
+
+export function useCreatePost() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (payload: CreatePostPayload) => postsApi.createPost(payload),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: QUERY_KEYS.FEED })
+    },
+  })
+}
+
+export function useDeletePost() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (postId: number) => postsApi.deletePost(postId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: QUERY_KEYS.FEED })
+    },
+  })
+}
+
+export function useToggleReaction(postId: number) {
+  const qc = useQueryClient()
+
+  return useMutation({
+    mutationFn: (reactionType: ReactionType | null) =>
+      postsApi.toggleReaction(postId, reactionType),
+
+    onMutate: async (newReaction) => {
+      await qc.cancelQueries({ queryKey: QUERY_KEYS.FEED })
+      const previousFeed = qc.getQueryData(QUERY_KEYS.FEED)
+
+      qc.setQueryData(
+        QUERY_KEYS.FEED,
+        (old: InfiniteData<PaginatedResponse<Post>> | undefined) => {
+          if (!old) return old
+          return {
+            ...old,
+            pages: old.pages.map((page) => ({
+              ...page,
+              results: page.results.map((post) => {
+                if (post.id !== postId) return post
+                const prevReaction = post.user_reaction
+                const prevCount = post.reactions_count
+                const prevSummary = { ...post.reactions_summary }
+
+                // Remove old reaction count
+                if (prevReaction && prevSummary[prevReaction]) {
+                  prevSummary[prevReaction] = (prevSummary[prevReaction] ?? 1) - 1
+                  if (prevSummary[prevReaction] === 0) delete prevSummary[prevReaction]
+                }
+
+                // Add new reaction count
+                if (newReaction) {
+                  prevSummary[newReaction] = (prevSummary[newReaction] ?? 0) + 1
+                }
+
+                const countDelta =
+                  prevReaction && !newReaction
+                    ? -1
+                    : !prevReaction && newReaction
+                      ? 1
+                      : 0
+
+                return {
+                  ...post,
+                  user_reaction: newReaction,
+                  reactions_count: prevCount + countDelta,
+                  reactions_summary: prevSummary,
+                }
+              }),
+            })),
+          }
+        }
+      )
+
+      return { previousFeed }
+    },
+
+    onError: (_err, _vars, context) => {
+      if (context?.previousFeed) {
+        qc.setQueryData(QUERY_KEYS.FEED, context.previousFeed)
+      }
+    },
+
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: QUERY_KEYS.FEED })
+    },
+  })
+}
+
+export function useToggleBookmark() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (postId: number) => postsApi.toggleBookmark(postId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: QUERY_KEYS.FEED })
+      qc.invalidateQueries({ queryKey: QUERY_KEYS.BOOKMARKS })
+    },
+  })
+}
+
+export function useAddComment() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: postsApi.addComment,
+    onSuccess: (_, variables) => {
+      qc.invalidateQueries({ queryKey: QUERY_KEYS.COMMENTS(variables.post_id) })
+      qc.invalidateQueries({ queryKey: QUERY_KEYS.FEED })
+    },
+  })
+}
