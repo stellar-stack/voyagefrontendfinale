@@ -7,6 +7,11 @@ export const postsApi = {
     return res.data
   },
 
+  getUserPosts: async (username: string, page = 1) => {
+    const res = await api.get<PaginatedResponse<Post>>(`/posts/user/${username}/?page=${page}`)
+    return res.data
+  },
+
   getFeed: async (page = 1) => {
     const res = await api.get<PaginatedResponse<Post>>(`/posts/feed/?page=${page}`)
     return res.data

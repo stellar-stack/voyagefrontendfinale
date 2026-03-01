@@ -27,6 +27,17 @@ export function useFeedQuery() {
   })
 }
 
+export function useUserPostsQuery(username: string) {
+  return useInfiniteQuery({
+    queryKey: QUERY_KEYS.USER_POSTS(username),
+    queryFn: ({ pageParam = 1 }) => postsApi.getUserPosts(username, pageParam as number),
+    getNextPageParam: (last) =>
+      last.next ? Number(new URL(last.next).searchParams.get('page')) : undefined,
+    initialPageParam: 1,
+    enabled: !!username,
+  })
+}
+
 export function useCommunityFeedQuery(communityId: number) {
   return useInfiniteQuery({
     queryKey: QUERY_KEYS.COMMUNITY_FEED(communityId),

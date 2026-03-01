@@ -2,6 +2,7 @@ import type { UserPublic } from './auth'
 
 export interface Message {
   id: number
+  conversation_id: number
   sender: UserPublic
   content: string
   is_read: boolean

@@ -28,6 +28,7 @@ export const QUERY_KEYS = {
 
   // Posts
   FEED: ['posts', 'feed'] as const,
+  USER_POSTS: (username: string) => ['posts', 'user', username] as const,
   COMMUNITY_FEED: (id: number) => ['posts', 'community', id] as const,
   POST: (id: number) => ['posts', id] as const,
   COMMENTS: (postId: number) => ['posts', postId, 'comments'] as const,

@@ -1,7 +1,7 @@
 import { useParams, Link } from 'react-router-dom'
-import { MapPin, Calendar, Users, Edit } from 'lucide-react'
+import { MapPin, Calendar, Edit } from 'lucide-react'
 import { useUserProfile } from '@/queries/auth.queries'
-import { useFeedQuery } from '@/queries/posts.queries'
+import { useUserPostsQuery } from '@/queries/posts.queries'
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll'
 import { useAuthStore } from '@/store/auth.store'
 import { UserAvatar } from '@/components/user/UserAvatar'
@@ -17,15 +17,13 @@ export default function ProfilePage() {
   const { username } = useParams<{ username: string }>()
   const currentUser = useAuthStore((s) => s.user)
   const { data: profile, isLoading: profileLoading } = useUserProfile(username!)
-  const { data: feedData, isLoading: feedLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useFeedQuery()
+  const { data: postsData, isLoading: postsLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useUserPostsQuery(username!)
   const sentinelRef = useInfiniteScroll(() => {
     if (hasNextPage && !isFetchingNextPage) fetchNextPage()
   }, !!hasNextPage)
 
   const isOwnProfile = currentUser?.username === username
-  const posts = (feedData?.pages.flatMap((p) => p.results) ?? []).filter(
-    (p) => p.user.username === username
-  )
+  const posts = postsData?.pages.flatMap((p) => p.results) ?? []
 
   if (profileLoading) {
     return (
@@ -135,7 +133,7 @@ export default function ProfilePage() {
       {/* Posts */}
       <h2 className="font-semibold text-text-primary px-1">Posts</h2>
 
-      {feedLoading && <div className="space-y-4">{[1, 2].map((i) => <PostSkeleton key={i} />)}</div>}
+      {postsLoading && <div className="space-y-4">{[1, 2].map((i) => <PostSkeleton key={i} />)}</div>}
 
       <div className="space-y-4">
         {posts.map((post) => <PostCard key={post.id} post={post} />)}

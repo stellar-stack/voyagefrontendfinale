@@ -5,7 +5,6 @@ import { usePostQuery } from '@/queries/posts.queries'
 import { PostCard } from '@/components/post/PostCard'
 import { CommentList } from '@/components/comment/CommentList'
 import { PostSkeleton } from '@/components/post/PostSkeleton'
-import { ReportModal } from '@/components/moderation/ReportModal'
 
 export default function PostDetailPage() {
   const { postId } = useParams<{ postId: string }>()
@@ -77,7 +76,6 @@ export default function PostDetailPage() {
         <CommentList postId={post.id} />
       </div>
 
-      <ReportModal />
     </motion.div>
   )
 }

@@ -23,9 +23,9 @@ export default function MessagesPage() {
     sendMessage(
       { recipient: username, content: '👋' },
       {
-        onSuccess: () => {
+        onSuccess: (data) => {
           setSearch('')
-          // navigate to conversation — we'll just reload conversations
+          navigate(`/messages/${data.conversation_id}`)
         },
       }
     )

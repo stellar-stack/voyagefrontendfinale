@@ -2,6 +2,8 @@ import { Outlet } from 'react-router-dom'
 import Sidebar from './Sidebar'
 import MobileNavBar from './MobileNavBar'
 import { EditPostModal } from '@/components/post/EditPostModal'
+import { CreatePostModal } from '@/components/post/CreatePostModal'
+import { ReportModal } from '@/components/moderation/ReportModal'
 
 export default function AppShell() {
   return (
@@ -19,8 +21,10 @@ export default function AppShell() {
       {/* Mobile bottom nav */}
       <MobileNavBar />
 
-      {/* Global modals */}
+      {/* Global modals — rendered once for all protected pages */}
+      <CreatePostModal />
       <EditPostModal />
+      <ReportModal />
     </div>
   )
 }

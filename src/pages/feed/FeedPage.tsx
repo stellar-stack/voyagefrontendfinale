@@ -4,9 +4,7 @@ import { useUIStore } from '@/store/ui.store'
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll'
 import { PostCard } from '@/components/post/PostCard'
 import { PostSkeleton } from '@/components/post/PostSkeleton'
-import { CreatePostModal } from '@/components/post/CreatePostModal'
 import { EmptyState } from '@/components/ui/EmptyState'
-import { ReportModal } from '@/components/moderation/ReportModal'
 
 export default function FeedPage() {
   const { openModal } = useUIStore()
@@ -67,9 +65,6 @@ export default function FeedPage() {
         </div>
       )}
 
-      {/* Modals */}
-      <CreatePostModal />
-      <ReportModal />
     </div>
   )
 }
