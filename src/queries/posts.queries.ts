@@ -68,12 +68,16 @@ export function useBookmarksQuery() {
   })
 }
 
-export function useCreatePost() {
+export function useCreatePost(communityId?: number) {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (payload: CreatePostPayload) => postsApi.createPost(payload),
+    mutationFn: (payload: CreatePostPayload) =>
+      postsApi.createPost({ ...payload, community: communityId }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: QUERY_KEYS.FEED })
+      if (communityId) {
+        qc.invalidateQueries({ queryKey: QUERY_KEYS.COMMUNITY_FEED(communityId) })
+      }
     },
   })
 }
@@ -174,9 +178,45 @@ export function useToggleBookmark() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (postId: number) => postsApi.toggleBookmark(postId),
-    onSuccess: () => {
+    onMutate: async (postId) => {
+      await qc.cancelQueries({ queryKey: QUERY_KEYS.FEED })
+      const prevFeed = qc.getQueryData(QUERY_KEYS.FEED)
+      const prevPost = qc.getQueryData<Post>(QUERY_KEYS.POST(postId))
+
+      const flipPost = (post: Post) =>
+        post.id === postId ? { ...post, is_bookmarked: !post.is_bookmarked } : post
+
+      qc.setQueryData(
+        QUERY_KEYS.FEED,
+        (old: InfiniteData<PaginatedResponse<Post>> | undefined) => {
+          if (!old) return old
+          return {
+            ...old,
+            pages: old.pages.map((page) => ({
+              ...page,
+              results: page.results.map(flipPost),
+            })),
+          }
+        }
+      )
+
+      if (prevPost) {
+        qc.setQueryData<Post>(QUERY_KEYS.POST(postId), {
+          ...prevPost,
+          is_bookmarked: !prevPost.is_bookmarked,
+        })
+      }
+
+      return { prevFeed, prevPost }
+    },
+    onError: (_err, postId, context) => {
+      if (context?.prevFeed) qc.setQueryData(QUERY_KEYS.FEED, context.prevFeed)
+      if (context?.prevPost) qc.setQueryData(QUERY_KEYS.POST(postId), context.prevPost)
+    },
+    onSettled: (_data, _err, postId) => {
       qc.invalidateQueries({ queryKey: QUERY_KEYS.FEED })
       qc.invalidateQueries({ queryKey: QUERY_KEYS.BOOKMARKS })
+      qc.invalidateQueries({ queryKey: QUERY_KEYS.POST(postId) })
     },
   })
 }

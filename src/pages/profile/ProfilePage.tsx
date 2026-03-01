@@ -65,7 +65,7 @@ export default function ProfilePage() {
               ) : (
                 <FollowButton
                   username={profile.username}
-                  isFollowing={(profile as { is_following?: boolean }).is_following ?? false}
+                  isFollowing={profile.is_following ?? false}
                   currentUsername={currentUser?.username}
                 />
               )}

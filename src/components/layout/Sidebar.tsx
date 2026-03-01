@@ -2,7 +2,7 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
   Home, Users, MessageCircle, Bell, Bookmark, Search,
-  Settings, LogOut, Sun, Moon, Monitor, ShieldCheck,
+  LogOut, Sun, Moon, Monitor, ShieldCheck,
 } from 'lucide-react'
 import { useAuthStore } from '@/store/auth.store'
 import { useUIStore } from '@/store/ui.store'
@@ -10,7 +10,6 @@ import { useNotificationStore } from '@/store/notification.store'
 import { useMessageStore } from '@/store/message.store'
 import { useLogout } from '@/queries/auth.queries'
 import { cn, getInitials, getMediaUrl } from '@/lib/utils'
-import { useUIStore as useUI } from '@/store/ui.store'
 
 const navLinks = [
   { to: '/feed', icon: Home, label: 'Feed' },
@@ -23,8 +22,7 @@ const navLinks = [
 
 export default function Sidebar() {
   const user = useAuthStore((s) => s.user)
-  const { theme, setTheme } = useUIStore()
-  const { openModal } = useUI()
+  const { theme, setTheme, openModal } = useUIStore()
   const unreadNotifs = useNotificationStore((s) => s.unreadCount)
   const unreadMessages = useMessageStore((s) => s.totalUnread)
   const { mutate: logout } = useLogout()

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import * as Dialog from '@radix-ui/react-dialog'
 import { useDropzone } from 'react-dropzone'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { X, Image, Video, Type, Upload } from 'lucide-react'
 import { toast } from 'sonner'
 import { useUIStore } from '@/store/ui.store'
@@ -18,9 +18,10 @@ const tabs: { type: PostType; icon: typeof Type; label: string }[] = [
 ]
 
 export function CreatePostModal() {
-  const { activeModal, closeModal } = useUIStore()
+  const { activeModal, modalData, closeModal } = useUIStore()
   const user = useAuthStore((s) => s.user)
-  const { mutate: createPost, isPending } = useCreatePost()
+  const communityId = (modalData as { communityId?: number } | null)?.communityId
+  const { mutate: createPost, isPending } = useCreatePost(communityId)
 
   const [postType, setPostType] = useState<PostType>('TEXT')
   const [caption, setCaption] = useState('')
@@ -86,14 +87,17 @@ export function CreatePostModal() {
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm" />
         <Dialog.Content asChild>
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 16 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 16 }}
-            className="fixed left-1/2 top-1/2 z-50 w-full max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-border bg-bg-card shadow-2xl"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            style={{ x: '-50%', y: '-50%' }}
+            className="fixed left-1/2 top-1/2 z-50 w-full max-w-lg rounded-2xl border border-border bg-bg-card shadow-2xl"
           >
             {/* Header */}
             <div className="flex items-center justify-between border-b border-border px-5 py-4">
-              <Dialog.Title className="font-semibold text-text-primary">Create Post</Dialog.Title>
+              <Dialog.Title className="font-semibold text-text-primary">
+                {communityId ? 'Post to Community' : 'Create Post'}
+              </Dialog.Title>
               <Dialog.Close className="p-1.5 rounded-lg hover:bg-surface-hover text-text-muted">
                 <X size={18} />
               </Dialog.Close>

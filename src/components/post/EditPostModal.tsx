@@ -45,11 +45,12 @@ export function EditPostModal() {
         <Dialog.Overlay className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm" />
         <Dialog.Content asChild>
           <motion.div
-            initial={{ opacity: 0, scale: 0.96, y: 8 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.96, y: 8 }}
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.96 }}
             transition={{ duration: 0.18 }}
-            className="fixed left-1/2 top-1/2 z-50 w-full max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-border bg-bg-card p-6 shadow-2xl"
+            style={{ x: '-50%', y: '-50%' }}
+            className="fixed left-1/2 top-1/2 z-50 w-full max-w-lg rounded-2xl border border-border bg-bg-card p-6 shadow-2xl"
           >
             <div className="flex items-center justify-between mb-5">
               <Dialog.Title className="text-lg font-semibold text-text-primary">

@@ -1,8 +1,9 @@
 import { useParams } from 'react-router-dom'
-import { Users, List } from 'lucide-react'
+import { Users, List, PenSquare } from 'lucide-react'
 import { useCommunityDetail, useToggleJoin } from '@/queries/communities.queries'
 import { useCommunityFeedQuery } from '@/queries/posts.queries'
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll'
+import { useUIStore } from '@/store/ui.store'
 import { UserAvatar } from '@/components/user/UserAvatar'
 import { PostCard } from '@/components/post/PostCard'
 import { PostSkeleton } from '@/components/post/PostSkeleton'
@@ -12,6 +13,7 @@ import { formatCount, getMediaUrl } from '@/lib/utils'
 export default function CommunityDetailPage() {
   const { communityId } = useParams<{ communityId: string }>()
   const id = Number(communityId)
+  const { openModal } = useUIStore()
   const { data: community, isLoading } = useCommunityDetail(id)
   const { mutate: toggleJoin, isPending: joiningPending } = useToggleJoin(id)
   const { data: feedData, isLoading: feedLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
@@ -99,6 +101,19 @@ export default function CommunityDetailPage() {
             ))}
           </ol>
         </div>
+      )}
+
+      {/* Create post (members only) */}
+      {community.is_member && (
+        <button
+          onClick={() => openModal('create-post', { communityId: id })}
+          className="card w-full flex items-center gap-3 p-4 hover:bg-surface-hover transition-colors cursor-pointer text-left"
+        >
+          <div className="h-9 w-9 rounded-full bg-accent-muted flex items-center justify-center shrink-0">
+            <PenSquare size={16} className="text-accent" />
+          </div>
+          <span className="text-text-muted text-sm">Post something to this community…</span>
+        </button>
       )}
 
       {/* Posts */}

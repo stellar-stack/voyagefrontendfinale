@@ -3,7 +3,7 @@ import { QueryClient } from '@tanstack/react-query'
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 2, // 2 minutes
+      staleTime: 1000 * 60 * 5, // 5 minutes
       retry: (failureCount, error) => {
         const axiosError = error as { response?: { status?: number } }
         if (axiosError?.response?.status === 401) return false

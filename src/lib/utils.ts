@@ -20,7 +20,8 @@ export function formatMessageTime(dateStr: string): string {
   return format(date, 'MMM d, h:mm a')
 }
 
-export function formatCount(n: number): string {
+export function formatCount(n: number | null | undefined): string {
+  if (n == null || isNaN(n)) return '0'
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`
   if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`
   return String(n)
