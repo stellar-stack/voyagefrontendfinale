@@ -54,4 +54,15 @@ export const moderationApi = {
     const res = await api.post(`/moderation/ai-violations/${violationId}/false-positive/`)
     return res.data
   },
+
+  getAdminStats: async () => {
+    const res = await api.get<{
+      pending_reports: number
+      total_users: number
+      total_posts: number
+      active_violations: number
+      suspended_users: number
+    }>('/moderation/stats/')
+    return res.data
+  },
 }

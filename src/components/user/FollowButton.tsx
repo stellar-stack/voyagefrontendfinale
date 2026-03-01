@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useToggleFollow } from '@/queries/auth.queries'
 
 interface FollowButtonProps {
@@ -8,16 +8,22 @@ interface FollowButtonProps {
 }
 
 export function FollowButton({ username, isFollowing: serverFollowing, currentUsername }: FollowButtonProps) {
-  // Local state gives instant UI feedback regardless of which cache the parent reads from.
-  // This is critical because UserCard (Followers/Following/Search pages) reads from list caches,
-  // not QUERY_KEYS.USER(username), so TanStack cache updates don't reach it.
   const [following, setFollowing] = useState(serverFollowing)
   const { mutate, isPending } = useToggleFollow(username)
 
-  // Sync when server data settles (e.g. after invalidation re-fetches)
+  // Tracks whether a mutation we fired is still in-flight.
+  // Prevents the useEffect from resetting local state to the stale serverFollowing
+  // value that arrives between mutation-resolve and the background re-fetch settling.
+  const mutationInFlight = useRef(false)
+
+  // Only sync from server when no mutation is running. This avoids the race where:
+  // mutation resolves → isPending=false → useEffect fires with stale serverFollowing
+  // → resets button to wrong state before the re-fetch corrects it.
   useEffect(() => {
-    if (!isPending) setFollowing(serverFollowing)
-  }, [serverFollowing, isPending])
+    if (!mutationInFlight.current) {
+      setFollowing(serverFollowing)
+    }
+  }, [serverFollowing])
 
   if (username === currentUsername) return null
 
@@ -25,8 +31,14 @@ export function FollowButton({ username, isFollowing: serverFollowing, currentUs
     e.preventDefault()
     const next = !following
     setFollowing(next)
+    mutationInFlight.current = true
     mutate(undefined, {
-      onError: () => setFollowing(!next), // rollback on server error
+      onSettled: () => {
+        mutationInFlight.current = false
+      },
+      onError: () => {
+        setFollowing(!next)
+      },
     })
   }
 

@@ -169,7 +169,9 @@ export function useToggleReaction(postId: number) {
     },
 
     onSettled: () => {
-      qc.invalidateQueries({ queryKey: QUERY_KEYS.FEED })
+      // Mark stale without forcing an immediate network request —
+      // the optimistic update is already applied and correct.
+      qc.invalidateQueries({ queryKey: QUERY_KEYS.FEED, refetchType: 'none' })
     },
   })
 }
@@ -214,9 +216,11 @@ export function useToggleBookmark() {
       if (context?.prevPost) qc.setQueryData(QUERY_KEYS.POST(postId), context.prevPost)
     },
     onSettled: (_data, _err, postId) => {
-      qc.invalidateQueries({ queryKey: QUERY_KEYS.FEED })
+      // Mark stale without forcing an immediate refetch on FEED/POST.
+      // Bookmarks list needs a real refetch since its structure differs (Bookmark, not Post).
+      qc.invalidateQueries({ queryKey: QUERY_KEYS.FEED, refetchType: 'none' })
+      qc.invalidateQueries({ queryKey: QUERY_KEYS.POST(postId), refetchType: 'none' })
       qc.invalidateQueries({ queryKey: QUERY_KEYS.BOOKMARKS })
-      qc.invalidateQueries({ queryKey: QUERY_KEYS.POST(postId) })
     },
   })
 }
@@ -227,7 +231,8 @@ export function useAddComment() {
     mutationFn: postsApi.addComment,
     onSuccess: (_, variables) => {
       qc.invalidateQueries({ queryKey: QUERY_KEYS.COMMENTS(variables.post_id) })
-      qc.invalidateQueries({ queryKey: QUERY_KEYS.FEED })
+      // Feed only needs to know comments_count changed — mark stale, don't force refetch
+      qc.invalidateQueries({ queryKey: QUERY_KEYS.FEED, refetchType: 'none' })
     },
   })
 }

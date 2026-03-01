@@ -80,6 +80,15 @@ export const authApi = {
   },
 
   // Admin
+  listAllUsers: async (page = 1, q = '') => {
+    const params = new URLSearchParams({ page: String(page) })
+    if (q) params.set('q', q)
+    const res = await api.get<import('@/types').PaginatedResponse<import('@/types').UserAdmin>>(
+      `/auth/admin/users/?${params}`
+    )
+    return res.data
+  },
+
   suspendUser: async (userId: number, days: 1 | 7 | 30 | 90) => {
     const res = await api.post(`/auth/admin/users/${userId}/suspend/`, { days })
     return res.data

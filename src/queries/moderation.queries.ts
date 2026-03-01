@@ -4,6 +4,33 @@ import { useNotificationStore } from '@/store/notification.store'
 import { QUERY_KEYS } from './queryClient'
 import type { CreateReportPayload, ReportStatus } from '@/types'
 
+export function useAdminStats() {
+  return useQuery({
+    queryKey: ['admin', 'stats'],
+    queryFn: moderationApi.getAdminStats,
+    staleTime: 1000 * 60,
+  })
+}
+
+export function useAdminDeletePost() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (postId: number) => moderationApi.adminDeletePost(postId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: QUERY_KEYS.REPORTS() })
+      qc.invalidateQueries({ queryKey: QUERY_KEYS.FEED, refetchType: 'none' })
+      qc.invalidateQueries({ queryKey: ['admin', 'stats'] })
+    },
+  })
+}
+
+export function useAdminSuspendUser() {
+  return useMutation({
+    mutationFn: ({ userId, days }: { userId: number; days: 1 | 7 | 30 | 90 }) =>
+      moderationApi.adminSuspendUser(userId, days),
+  })
+}
+
 export function useNotificationsQuery() {
   return useInfiniteQuery({
     queryKey: QUERY_KEYS.NOTIFICATIONS,
@@ -16,7 +43,6 @@ export function useNotificationsQuery() {
 
 export function useMarkNotificationRead() {
   const qc = useQueryClient()
-  const { setUnreadCount } = useNotificationStore()
   return useMutation({
     mutationFn: (notifId: number) => moderationApi.markNotificationRead(notifId),
     onSuccess: () => {
